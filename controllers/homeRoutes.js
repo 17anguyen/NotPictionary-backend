@@ -15,7 +15,6 @@ router.get("/", (req, res) => {
       allScores: hbsData,
       logged_in: req.session.logged_in,
       logged_in_user: req.session.user_id,
-
     });
   });
 });
