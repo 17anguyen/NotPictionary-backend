@@ -56,9 +56,11 @@ io.on('connection', (socket) => {
         console.log('A user disconnected');
     });
     
-    socket.on('chat message', (msg) => {
-        console.log('message: ' + msg);
+    socket.on('chat message', (msg,room) => {
+      io.in(room).emit('chat message', msg);
       });
+
+    socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
 });
 app.get('/', (req, res) => {
   res.json({
