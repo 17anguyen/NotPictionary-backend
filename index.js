@@ -47,8 +47,10 @@ io.on('connection', (socket) => {
     });
     
     socket.on('chat message', (msg,room) => {
-        console.log('message: ' + msg);
+      io.in(room).emit('chat message', msg);
       });
+
+    socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
 });
 app.get('/', (req, res) => {
   res.json({
