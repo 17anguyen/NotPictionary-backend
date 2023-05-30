@@ -14,8 +14,6 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 
-// const PORT = process.env.PORT || 3000;
-
 const sess = {
     secret: 'Super secret secret',
     cookie: {},
@@ -25,14 +23,6 @@ const sess = {
       db: sequelize
     })
   };
-
-// app.get('/', (req, res) => {
-//   res.send('<h1>Hello world</h1>');
-// });
-
-// server.listen(3000, () => {
-//   console.log('listening on *:3000');
-// });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,7 +46,7 @@ io.on('connection', (socket) => {
         console.log('A user disconnected');
     });
     
-    socket.on('chat message', (msg) => {
+    socket.on('chat message', (msg,room) => {
         console.log('message: ' + msg);
       });
 });
@@ -65,7 +55,6 @@ app.get('/', (req, res) => {
       message: 'Hello world',
   });
 });
-
 
 sequelize.sync({ force: false }).then(() => {
     server.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}/`));
