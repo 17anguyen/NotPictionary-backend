@@ -41,36 +41,54 @@ router.post('/', async (req, res) => {
   
 router.post('/login', async (req, res) => {
     try {
-      const userData = await User.findOne({ where: { username: req.body.username } });
-  
-      if (!userData) {
-        res
-          .status(400)
-          .json({ message: 'Incorrect username or password, please try again' });
-        return;
-      }
-  
-      const validPassword = await userData.checkPassword(req.body.password);
-  
-      if (!validPassword) {
-        res
-          .status(400)
-          .json({ message: 'Incorrect username or password, please try again' });
-        return;
-      }
-  
-      req.session.save(() => {
-        req.session.user_id = userData.id;
-        req.session.logged_in = true;
-        
-        res.json({ user: userData, message: 'You are now logged in!' });
-      });
-  
+      const foundUser = await User.findOne({ 
+        where: { 
+            username: req.body.username 
+        } 
+    });  
+      if (!foundUser) {
+        return res.status(400).json({ msg: 'invalid login info'});
+      } else if (!bcrypt.compareSync(req.body.password, foundUser.password)) {
+        return res.status(400).json({msg: 'invalid login'})
+      } else {
+        const token = jwt.sign(
+            {
+              username: foundUser.username,
+              userId: foundUser.id
+            },
+            process.env.JWT_SECRET,
+            {
+              expiresIn: "2h"
+            }
+          );
+          res.json({
+            token,
+            user: foundUser
+          });
+      } 
     } catch (err) {
-      console.log(err)
-      res.status(400).json(err);
+        console.log(err);
+        res.status(500).json({
+          msg: "womp womp",
+          err
+        });
+      }  
+  });
+
+  router.get("/verifytoken", async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];  
+    try {
+      const data = jwt.verify(token, process.env.JWT_SECRET);
+      const foundUser = await User.findByPk(data.userId, {
+        include: [Score]
+      });  
+      res.json(foundUser);
+    } catch (err) {
+      console.log(err);
+      res.status(403).json({ msg: "bad token", err });
     }
   });
+  
 
   router.post('/logout', (req, res) => {
     if (req.session.logged_in) {
