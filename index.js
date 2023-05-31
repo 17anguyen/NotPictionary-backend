@@ -1,33 +1,23 @@
 const express = require('express');
 const app = express();
-const session = require('express-session');
 
 const path = require('path');
 
 const sequelize = require('./config/connection');
-const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 const routes = require('./controllers');
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
+const {User,Score} = require('./models')
+
 const cors = require('cors');
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 
-const sess = {
-    secret: 'Super secret secret',
-    cookie: {},
-    resave: false,
-    saveUninitialized: true,
-    store: new SequelizeStore({
-      db: sequelize
-    })
-  };
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(routes);
+app.use('/',routes);
 
 
 const io = new Server(server,{
@@ -46,11 +36,12 @@ io.on('connection', (socket) => {
         console.log('A user disconnected');
     });
     
-    socket.on('send-message', (msg,room) => {
-      socket.to(room).emit('receive-message', msg);
+    socket.on('send-message', (data) => {
+      socket.to(data.room).emit('receive-message', data);
       });
     socket.on("join-room", room =>{
       socket.join(room)
+      console.log(`user ${socket.id} joined room ${room}`)
     })
 
     socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
