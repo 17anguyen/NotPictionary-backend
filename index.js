@@ -46,16 +46,14 @@ io.on('connection', (socket) => {
         console.log('A user disconnected');
     });
     
-    socket.on('chat message', (msg,room) => {
-      io.in(room).emit('chat message', msg);
+    socket.on('send-message', (msg,room) => {
+      socket.to(room).emit('receive-message', msg);
       });
+    socket.on("join-room", room =>{
+      socket.join(room)
+    })
 
     socket.on('drawing', (data) => socket.broadcast.emit('drawing', data));
-});
-app.get('/', (req, res) => {
-  res.json({
-      message: 'Hello world',
-  });
 });
 
 sequelize.sync({ force: false }).then(() => {
