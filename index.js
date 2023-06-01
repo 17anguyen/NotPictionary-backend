@@ -19,6 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/", routes);
 
+app.use(cors({
+    origin:"https://doodledash.herokuapp.com" // change
+  }))
+
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
