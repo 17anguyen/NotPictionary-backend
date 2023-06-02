@@ -17,11 +17,8 @@ const { Server } = require("socket.io");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cors());
 app.use("/", routes);
-
-app.use(cors({
-    origin:"https://doodledash.herokuapp.com" // change
-  }))
 
 const io = new Server(server, {
   cors: {
@@ -29,7 +26,6 @@ const io = new Server(server, {
   },
 });
 
-app.use(cors());
 
 const words = ["waffle",
     "bird",
