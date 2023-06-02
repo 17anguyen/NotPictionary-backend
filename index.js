@@ -17,6 +17,7 @@ const { Server } = require("socket.io");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cors());
 app.use("/", routes);
 
 const io = new Server(server, {
@@ -25,7 +26,6 @@ const io = new Server(server, {
   },
 });
 
-app.use(cors());
 
 const words = ["waffle",
     "bird",
