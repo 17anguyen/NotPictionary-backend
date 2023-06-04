@@ -82,26 +82,48 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-message", (data) => {
+
     rooms[data.room].messages.push(data);
-    io.in(data.room).emit("receive-message", data);
+    socket.in(data.room).emit("receive-message", data);
+    console.log("messages=====")
+
   });
+  socket.on("send-answers",(answer)=>{
+    // socket.in(data.room).emit("receive-message", data);
+    console.log("answers====="+answer)
+  })
   socket.on("join-room", (room, username) => {
-    socket.join(room);
-    rooms[room].users.push({ socket: socket, username: username });
-    console.log(`user ${socket.id} joined room ${room}`);
-    io.to(room).emit("receive-message", `${username} joined the room!`);
+    if(room !== "" && rooms[room]){
+        socket.join(room);
+        rooms[room].users.push({ socket: socket, username: username });
+        console.log("=====join-room"+rooms[room])
+        console.log(`user ${socket.id} joined room ${room}`);
+       // io.to(room).emit("receive-message", `${username} joined the room!`);
+    }
+    
   });
-
-
 
   socket.on("start-game", (room) => {
-    // randomly select user from users array in that room
+    if(rooms[room]){
+      const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
+      const selectedWord = words[Math.floor(Math.random() * words.length)]
+      console.log(selectedWord)
+      console.log(rooms[room].users)
+      console.log(userSelected)
+      socket.in(room).emit("selected-props", userSelected,selectedWord);
+
+    }
+    
     // randomly select a prompt, assign to secretWord
+    //const randomWord = words[Mathfloor]
     // emit event to inform the room of who the drawer is
+    //io.to(room).emit("selected-player",``)
     // emit to the drawer the secret word
   });
-
-  socket.on("drawing", (data) => socket.broadcast.emit("drawing", data));
+ 
+  socket.on("drawing", (data,room) => {
+    
+    socket.in(room).emit("drawing", data)});
 });
 
 sequelize.sync({ force: false }).then(() => {
