@@ -82,14 +82,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-message", (data) => {
-
     rooms[data.room].messages.push(data);
     socket.in(data.room).emit("receive-message", data);
     console.log("messages=====")
 
   });
-  socket.on("send-answers",(answer)=>{
-    // socket.in(data.room).emit("receive-message", data);
+  socket.on("send-answers",(data)=>{
+   socket.in(data.room).emit("receive-answer", data);
     console.log("answers====="+answer)
   })
   socket.on("join-room", (room, username) => {
