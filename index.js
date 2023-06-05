@@ -18,7 +18,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+
+app.get("/check-rooms", (req,res) => {
+  console.log("here")
+  // loop over rooms object, check which ones are open
+  try{
+    const freeRooms = []
+   for (const key in rooms){
+    if (rooms[key].inGame){
+      freeRooms.push(rooms[key].name)
+    }
+   }
+    // return array of open rooms
+    console.log(freeRooms)
+    res.status(200).json(freeRooms)
+
+  }catch(err){
+    res.status(400).json(err)
+  }
+})
+
 app.use("/", routes);
+
+
 
 const io = new Server(server, {
   cors: {
@@ -58,19 +80,22 @@ const rooms = {
     name: "room1",
     users: [],
     messages: [],
-    secrectWord: null
+    secrectWord: null,
+    inGame: true
   },
   room2: {
     name: "room2",
     users: [],
     messages: [],
-    secrectWord: null
-  },
+    secrectWord: null,
+    inGame: true
+    },
   room3: {
     name: "room3",
     users: [],
     messages: [],
-    secrectWord: null
+    secrectWord: null,
+    inGame: true
   },
 };
 
@@ -89,12 +114,14 @@ io.on("connection", (socket) => {
   });
   socket.on("send-answers",(data)=>{
    socket.in(data.room).emit("receive-answer", data);
-    console.log("answers====="+answer)
+    console.log("answers====="+data)
   })
   socket.on("join-room", (room, username) => {
     if(room !== "" && rooms[room]){
         socket.join(room);
         rooms[room].users.push({ socket: socket, username: username });
+        rooms[room].inGame = true
+        console.log("++++++++++"+rooms[room].inGame)
         console.log("=====join-room"+rooms[room])
         console.log(`user ${socket.id} joined room ${room}`);
        // io.to(room).emit("receive-message", `${username} joined the room!`);
@@ -109,7 +136,7 @@ io.on("connection", (socket) => {
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
-      socket.in(room).emit("selected-props", userSelected,selectedWord);
+      io.in(room).emit("selected-props", {userSelected,selectedWord});
 
     }
     
@@ -121,7 +148,7 @@ io.on("connection", (socket) => {
   });
  
   socket.on("drawing", (data,room) => {
-    
+    console.log("======="+room)
     socket.in(room).emit("drawing", data)});
 });
 
