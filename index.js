@@ -107,6 +107,8 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
+   
+
   });
 
   socket.on("send-message", (data) => {
@@ -127,8 +129,7 @@ io.on("connection", (socket) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
       rooms[room].users.push({ socket: socket, username: username });
-      rooms[room].inGame = true
-      console.log("++++++++++" + rooms[room].inGame)
+      
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
       // io.to(room).emit("receive-message", `${username} joined the room!`);
@@ -140,6 +141,8 @@ io.on("connection", (socket) => {
     if (rooms[room]) {
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
+      rooms[room].inGame = true
+      console.log("++++++++++" + rooms[room].inGame)
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
