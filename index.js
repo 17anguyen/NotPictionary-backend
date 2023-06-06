@@ -25,7 +25,7 @@ app.get("/check-rooms", (req, res) => {
   try {
     const freeRooms = []
     for (const key in rooms) {
-      if (rooms[key].inGame) {
+      if (!rooms[key].inGame) {
         freeRooms.push(rooms[key].name)
       }
     }
@@ -82,7 +82,7 @@ const rooms = {
     messages: [],
     answers: [],
     secrectWord: null,
-    inGame: true
+    inGame: false
   },
   room2: {
     name: "room2",
@@ -90,7 +90,7 @@ const rooms = {
     messages: [],
     answers: [],
     secrectWord: null,
-    inGame: true
+    inGame: false
   },
   room3: {
     name: "room3",
@@ -98,7 +98,7 @@ const rooms = {
     messages: [],
     answers: [],
     secrectWord: null,
-    inGame: true
+    inGame: false
   },
 };
 
@@ -156,7 +156,9 @@ io.on("connection", (socket) => {
 
   socket.on("drawing", (data, room) => {
     console.log("=======" + room)
-    socket.in(room).emit("drawing", data)
+    if (room){
+      socket.in(room).emit("drawing", data)
+    }
   });
 });
 
