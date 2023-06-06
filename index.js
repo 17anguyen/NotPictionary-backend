@@ -116,7 +116,7 @@ io.on("connection", (socket) => {
     console.log("messages=====")
 
   });
-  // socket.in("room1").emit("recieve-answer", { "room": "room1", "sender": , "answer": "something" })
+
   socket.on("send-answers", (data) => {
     rooms[data.room].answers.push(data);
     console.log(JSON.stringify(data))
