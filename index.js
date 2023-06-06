@@ -19,21 +19,21 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
 
-app.get("/check-rooms", (req,res) => {
+app.get("/check-rooms", (req, res) => {
   console.log("here")
   // loop over rooms object, check which ones are open
-  try{
+  try {
     const freeRooms = []
-   for (const key in rooms){
-    if (rooms[key].inGame){
-      freeRooms.push(rooms[key].name)
+    for (const key in rooms) {
+      if (rooms[key].inGame) {
+        freeRooms.push(rooms[key].name)
+      }
     }
-   }
     // return array of open rooms
     console.log(freeRooms)
     res.status(200).json(freeRooms)
 
-  }catch(err){
+  } catch (err) {
     res.status(400).json(err)
   }
 })
@@ -50,36 +50,37 @@ const io = new Server(server, {
 
 
 const words = ["waffle",
-    "bird",
-    "cake",
-    'house',
-    'cookie',
-    'couch',
-    'car',
-    'computer',
-    'tree',
-    'hand',
-    'cheese',
-    'snowman',
-    'leaf',
-    'king',
-    'motorcycle',
-    'sun',
-    'shoe',
-    'window',
-    'crayon',
-    'apple',
-    'basketball',
-    'snail',
-    'bridge',
-    'sunglasses',
-    'coat']
+  "bird",
+  "cake",
+  'house',
+  'cookie',
+  'couch',
+  'car',
+  'computer',
+  'tree',
+  'hand',
+  'cheese',
+  'snowman',
+  'leaf',
+  'king',
+  'motorcycle',
+  'sun',
+  'shoe',
+  'window',
+  'crayon',
+  'apple',
+  'basketball',
+  'snail',
+  'bridge',
+  'sunglasses',
+  'coat']
 
 const rooms = {
   room1: {
     name: "room1",
     users: [],
     messages: [],
+    answers: [],
     secrectWord: null,
     inGame: true
   },
@@ -87,13 +88,15 @@ const rooms = {
     name: "room2",
     users: [],
     messages: [],
+    answers: [],
     secrectWord: null,
     inGame: true
-    },
+  },
   room3: {
     name: "room3",
     users: [],
     messages: [],
+    answers: [],
     secrectWord: null,
     inGame: true
   },
@@ -107,49 +110,54 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-message", (data) => {
+    console.log(data)
     rooms[data.room].messages.push(data);
     socket.in(data.room).emit("receive-message", data);
     console.log("messages=====")
 
   });
-  socket.on("send-answers",(data)=>{
-   socket.in(data.room).emit("receive-answer", data);
-    console.log("answers====="+data)
+  // socket.in("room1").emit("recieve-answer", { "room": "room1", "sender": , "answer": "something" })
+  socket.on("send-answers", (data) => {
+    rooms[data.room].answers.push(data);
+    console.log(JSON.stringify(data))
+    socket.in(data.room).emit("receive-answer", data);
+    console.log("answers=====" + data)
   })
   socket.on("join-room", (room, username) => {
-    if(room !== "" && rooms[room]){
-        socket.join(room);
-        rooms[room].users.push({ socket: socket, username: username });
-        rooms[room].inGame = true
-        console.log("++++++++++"+rooms[room].inGame)
-        console.log("=====join-room"+rooms[room])
-        console.log(`user ${socket.id} joined room ${room}`);
-       // io.to(room).emit("receive-message", `${username} joined the room!`);
+    if (room !== "" && rooms[room]) {
+      socket.join(room);
+      rooms[room].users.push({ socket: socket, username: username });
+      rooms[room].inGame = true
+      console.log("++++++++++" + rooms[room].inGame)
+      console.log("=====join-room" + rooms[room])
+      console.log(`user ${socket.id} joined room ${room}`);
+      // io.to(room).emit("receive-message", `${username} joined the room!`);
     }
-    
+
   });
 
   socket.on("start-game", (room) => {
-    if(rooms[room]){
+    if (rooms[room]) {
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
-      io.in(room).emit("selected-props", {userSelected,selectedWord});
+      io.in(room).emit("selected-props", { userSelected, selectedWord });
 
     }
-    
+
     // randomly select a prompt, assign to secretWord
     //const randomWord = words[Mathfloor]
     // emit event to inform the room of who the drawer is
     //io.to(room).emit("selected-player",``)
     // emit to the drawer the secret word
   });
- 
-  socket.on("drawing", (data,room) => {
-    console.log("======="+room)
-    socket.in(room).emit("drawing", data)});
+
+  socket.on("drawing", (data, room) => {
+    console.log("=======" + room)
+    socket.in(room).emit("drawing", data)
+  });
 });
 
 sequelize.sync({ force: false }).then(() => {
