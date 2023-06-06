@@ -1,24 +1,24 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 
-class Score extends Model {}
+class Score extends Model { }
 
 Score.init(
     {
         id: {
-            type:DataTypes.INTEGER,
-            allowNull:false,
+            type: DataTypes.INTEGER,
+            allowNull: false,
             primaryKey: true,
-            autoIncrement:true
+            autoIncrement: true
         },
         score: {
-            type:DataTypes.INTEGER,
+            type: DataTypes.INTEGER,
             defaultValue: 0
         },
         user_id: {
             type: DataTypes.INTEGER,
             references: {
-                model: 'User',
+                model: 'user',
                 key: 'id'
             }
         }
@@ -28,7 +28,7 @@ Score.init(
         freezeTableName: true,
         underscored: true,
         modelName: 'score',
-      }
+    }
 )
 
 module.exports = Score;
