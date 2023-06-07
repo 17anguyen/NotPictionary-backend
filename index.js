@@ -14,6 +14,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,7 +41,8 @@ app.get("/check-rooms", (req, res) => {
 
 app.use("/", routes);
 
-
+app.use('/:id',
+  express.static(path.join(__dirname + '/public')));
 
 const io = new Server(server, {
   cors: {
@@ -110,7 +112,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
-   
+
 
   });
 
@@ -131,8 +133,9 @@ io.on("connection", (socket) => {
   socket.on("join-room", (room, username) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
+
       rooms[room].users.push({ socket: socket, username: username, score: 0 });
-      
+
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
       // io.to(room).emit("receive-message", `${username} joined the room!`);
@@ -184,7 +187,7 @@ io.on("connection", (socket) => {
 
   socket.on("drawing", (data, room) => {
     console.log("=======" + room)
-    if (room){
+    if (room) {
       socket.in(room).emit("drawing", data)
     }
   });
