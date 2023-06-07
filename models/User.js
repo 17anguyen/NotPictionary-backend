@@ -24,9 +24,13 @@ User.init(
       },
     },
     username: {
-      type:DataTypes.STRING,
-      allowNull:false
+      type: DataTypes.STRING,
+      allowNull: false
     },
+    correctGuesses: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    }
   },
   {
     hooks: {
