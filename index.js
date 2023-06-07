@@ -107,9 +107,20 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
-   
+    leaveRoom(socket)
 
   });
+const leaveRoom =(socket) =>{
+  console.log("leave room")
+  for (const key in rooms) {
+   if (rooms[key].users.includes(socket)) {
+    console.log(socket)
+    
+   }
+  }
+
+
+}
 
   socket.on("send-message", (data) => {
     console.log(data)
@@ -128,6 +139,7 @@ io.on("connection", (socket) => {
   socket.on("join-room", (room, username) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
+      socket.roomName = room;
       rooms[room].users.push({ socket: socket, username: username });
       
       console.log("=====join-room" + rooms[room])
