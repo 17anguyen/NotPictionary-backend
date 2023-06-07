@@ -152,7 +152,7 @@ io.on("connection", (socket) => {
     socket.in(room).emit("drawing", data)});
 });
 
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ force: false}).then(() => {
   server.listen(PORT, () =>
     console.log(`Server listening on http://localhost:${PORT}/`)
   );
