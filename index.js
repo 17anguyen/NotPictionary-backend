@@ -79,6 +79,7 @@ const rooms = {
   room1: {
     name: "room1",
     users: [],
+    round:null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -87,6 +88,7 @@ const rooms = {
   room2: {
     name: "room2",
     users: [],
+    round:null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -95,6 +97,7 @@ const rooms = {
   room3: {
     name: "room3",
     users: [],
+    round:null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -128,7 +131,7 @@ io.on("connection", (socket) => {
   socket.on("join-room", (room, username) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
-      rooms[room].users.push({ socket: socket, username: username });
+      rooms[room].users.push({ socket: socket, username: username, score: 0 });
       
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
@@ -142,12 +145,12 @@ io.on("connection", (socket) => {
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       rooms[room].inGame = true
+      rooms[room].round = 1
       console.log("++++++++++" + rooms[room].inGame)
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
       io.in(room).emit("selected-props", { userSelected, selectedWord });
-
     }
 
     // randomly select a prompt, assign to secretWord
@@ -156,6 +159,28 @@ io.on("connection", (socket) => {
     //io.to(room).emit("selected-player",``)
     // emit to the drawer the secret word
   });
+
+  socket.on("round-over", ({sender, roomId, message}) => {
+    const room = rooms[roomId]
+    if (room) {
+      //increment round number
+      room.round++
+      //select new drawer
+      const userSelected = room.users[Math.floor(Math.random() * room.users.length)].username;
+      //select new word
+      const selectedWord = words[Math.floor(Math.random() * words.length)]
+      //add score to user who guessed correctly
+      // find the user in that array, add 1 to their score
+      for (let i = 0; i < room.users.length; i++) {
+        if (room.users[i].username===sender){
+          room.users[i].score++
+        }        
+      }
+      //clear the board
+      //emit new board and new drawer with new secret word
+      io.in(roomId).emit("selected-props", { userSelected, selectedWord })
+    }
+  } )
 
   socket.on("drawing", (data, room) => {
     console.log("=======" + room)
