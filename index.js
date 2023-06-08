@@ -115,17 +115,17 @@ io.on("connection", (socket) => {
     leaveRoom(socket)
 
   });
-const leaveRoom =(socket) =>{
-  console.log("leave room")
-  for (const key in rooms) {
-   if (rooms[key].users.some(user=>user.socket.id === socket.id)) {
-    console.log("hello!!!!!!!!!!!!!!!!"+socket.roomId)
-    
-   }
+  const leaveRoom = (socket) => {
+    console.log("leave room")
+    for (const key in rooms) {
+      if (rooms[key].users.some(user => user.socket.id === socket.id)) {
+        console.log("hello!!!!!!!!!!!!!!!!" + socket.roomId)
+
+      }
+    }
+
+
   }
-
-
-}
 
   socket.on("send-message", (data) => {
     console.log(data)
@@ -198,14 +198,14 @@ const leaveRoom =(socket) =>{
   })
 
   socket.on("drawing", (data, room) => {
-  
+
     if (room) {
       socket.in(room).emit("drawing", data)
     }
   });
 });
 
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ force: true }).then(() => {
   server.listen(PORT, () =>
     console.log(`Server listening on http://localhost:${PORT}/`)
   );
