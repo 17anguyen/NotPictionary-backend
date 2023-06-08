@@ -81,7 +81,7 @@ const rooms = {
   room1: {
     name: "room1",
     users: [],
-    round:null,
+    round: null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -90,7 +90,7 @@ const rooms = {
   room2: {
     name: "room2",
     users: [],
-    round:null,
+    round: null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -99,7 +99,7 @@ const rooms = {
   room3: {
     name: "room3",
     users: [],
-    round:null,
+    round: null,
     messages: [],
     answers: [],
     secrectWord: null,
@@ -163,7 +163,7 @@ io.on("connection", (socket) => {
     // emit to the drawer the secret word
   });
 
-  socket.on("round-over", ({sender, roomId, message}) => {
+  socket.on("round-over", ({ sender, roomId, message }) => {
     const room = rooms[roomId]
     if (room) {
       //increment round number
@@ -175,15 +175,15 @@ io.on("connection", (socket) => {
       //add score to user who guessed correctly
       // find the user in that array, add 1 to their score
       for (let i = 0; i < room.users.length; i++) {
-        if (room.users[i].username===sender){
+        if (room.users[i].username === sender) {
           room.users[i].score++
-        }        
+        }
       }
       //clear the board
       //emit new board and new drawer with new secret word
       io.in(roomId).emit("selected-props", { userSelected, selectedWord })
     }
-  } )
+  })
 
   socket.on("drawing", (data, room) => {
     console.log("=======" + room)
