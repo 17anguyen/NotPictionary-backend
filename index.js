@@ -118,8 +118,8 @@ io.on("connection", (socket) => {
 const leaveRoom =(socket) =>{
   console.log("leave room")
   for (const key in rooms) {
-   if (rooms[key].users.includes(socket)) {
-    console.log(socket)
+   if (rooms[key].users.some(user=>user.socket.id === socket.id)) {
+    console.log("hello!!!!!!!!!!!!!!!!"+socket.roomId)
     
    }
   }
@@ -144,12 +144,13 @@ const leaveRoom =(socket) =>{
   socket.on("join-room", (room, username) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
-
+      socket.roomId = room
       rooms[room].users.push({ socket: socket, username: username, score: 0 });
 
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
       // io.to(room).emit("receive-message", `${username} joined the room!`);
+      console.log("=====join-room" + rooms[room].users)
     }
 
   });
