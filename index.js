@@ -112,9 +112,26 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
-
+    leaveRoom(socket)
 
   });
+
+const leaveRoom =(socket) =>{
+  console.log("leave room")
+  
+  for (const key in rooms) {
+    const roomName =rooms[key]
+   if (roomName.users.some(user=>user.socket.id === socket.id)) {
+
+    socket.leave(key);
+    roomName.users = roomName.users.filter((item) => item.socket !== socket);
+  }
+  
+   if(roomName.users.length == 0){
+    roomName.inGame = false
+   }
+  }
+}
 
   socket.on("send-message", (data) => {
     console.log(data)
@@ -133,12 +150,13 @@ io.on("connection", (socket) => {
   socket.on("join-room", (room, username) => {
     if (room !== "" && rooms[room]) {
       socket.join(room);
-
+      socket.roomId = room
       rooms[room].users.push({ socket: socket, username: username, score: 0 });
 
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
       // io.to(room).emit("receive-message", `${username} joined the room!`);
+      console.log("=====join-room" + rooms[room].users)
     }
 
   });
@@ -186,7 +204,7 @@ io.on("connection", (socket) => {
   } )
 
   socket.on("drawing", (data, room) => {
-    console.log("=======" + room)
+  
     if (room) {
       socket.in(room).emit("drawing", data)
     }
