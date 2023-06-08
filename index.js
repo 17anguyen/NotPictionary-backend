@@ -81,28 +81,28 @@ const rooms = {
   room1: {
     name: "room1",
     users: [],
-    round: null,
+    round: 0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
   room2: {
     name: "room2",
     users: [],
-    round: null,
+    round: 0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
   room3: {
     name: "room3",
     users: [],
-    round: null,
+    round: 0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
 };
@@ -136,15 +136,19 @@ io.on("connection", (socket) => {
   socket.on("send-message", (data) => {
     console.log(data)
     rooms[data.room].messages.push(data);
-    socket.in(data.room).emit("receive-message", data);
+    io.in(data.room).emit("receive-message", data);
     console.log("messages=====")
 
   });
 
   socket.on("send-answers", (data) => {
+    const room = data.room
     rooms[data.room].answers.push(data);
     console.log(JSON.stringify(data))
     socket.in(data.room).emit("receive-answer", data);
+    if (data.message === rooms[data.room].secretWord) {
+      io.in(data.room).emit("round-over", data)
+    }
     console.log("answers=====" + data)
   })
   socket.on("join-room", (room, username) => {
@@ -166,13 +170,15 @@ io.on("connection", (socket) => {
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       rooms[room].inGame = true
-      rooms[room].round = 1
+      rooms[room].round++
+      rooms[room].secretWord = selectedWord
       console.log("++++++++++" + rooms[room].inGame)
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
-      io.in(room).emit("selected-props", { userSelected, selectedWord });
+      io.in(room).emit("selected-props", { userSelected, selectedWord, round: rooms[room].round });
     }
+
 
     // randomly select a prompt, assign to secretWord
     //const randomWord = words[Mathfloor]
@@ -181,25 +187,46 @@ io.on("connection", (socket) => {
     // emit to the drawer the secret word
   });
 
-  socket.on("round-over", ({ sender, roomId, message }) => {
-    const room = rooms[roomId]
-    if (room) {
+  socket.on("round-over", ({ sender, room, message }, isCorrect) => {
+    const roomObj = rooms[room]
+    console.log("here for score" + roomObj)
+    if (roomObj) {
       //increment round number
-      room.round++
+      // room.round++
       //select new drawer
-      const userSelected = room.users[Math.floor(Math.random() * room.users.length)].username;
+      const userSelected = roomObj.users[Math.floor(Math.random() * roomObj.users.length)].username;
       //select new word
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       //add score to user who guessed correctly
       // find the user in that array, add 1 to their score
-      for (let i = 0; i < room.users.length; i++) {
-        if (room.users[i].username === sender) {
-          room.users[i].score++
+      for (let i = 0; i < roomObj.users.length; i++) {
+
+        if (roomObj.users[i].username === sender) {
+          roomObj.users[i].score++
         }
       }
+      console.log(`Score for ${room.users[i].username}: ${room.users[i].score}`)
       //clear the board
       //emit new board and new drawer with new secret word
       io.in(roomId).emit("selected-props", { userSelected, selectedWord })
+    }
+  })
+
+  socket.on("gameover", (room) => {
+    if (rooms[room]) {
+      //checking for user with most points
+      let winner = { username: '', score: 0 }
+      let users = rooms[room].users
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+
+        if (user.score > winner.score) {
+          winner.score = user.score
+          winner.username = user.username
+        }
+      }
+      io.in(room).emit('gameover', winner)
     }
   })
 
