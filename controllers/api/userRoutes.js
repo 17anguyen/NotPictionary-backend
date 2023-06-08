@@ -93,7 +93,7 @@ router.get("/verifytoken", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   try {
     const data = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("tokek verify")
+    console.log("token verify")
     console.log(date.userId)
     const foundUser = await User.findByPk(data.userId, {
       include: [Score]

@@ -205,11 +205,30 @@ const leaveRoom =(socket) =>{
           roomObj.users[i].score++
         }        
       }
+      console.log(`Score for ${room.users[i].username}: ${room.users[i].score}`)
       //clear the board
       //emit new board and new drawer with new secret word
      io.in(roomObj.name).emit("selected-props", { userSelected, selectedWord, isCorrect})
     }
   } )
+
+  socket.on("gameover", (room) => {
+    if (rooms[room]) {
+      //checking for user with most points
+      let winner = {username:'', score:0}
+      let users = rooms[room].users
+
+      for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+
+        if (user.score > winner.score) {
+          winner.score = user.score
+          winner.username = user.username
+        }
+      }
+      io.in(room).emit('gameover', winner)
+    }
+  })
 
   socket.on("drawing", (data, room) => {
   
