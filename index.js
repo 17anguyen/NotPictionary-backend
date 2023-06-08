@@ -198,7 +198,7 @@ const leaveRoom =(socket) =>{
   } )
 
   socket.on("drawing", (data, room) => {
-    console.log("=======" + room)
+  
     if (room) {
       socket.in(room).emit("drawing", data)
     }
