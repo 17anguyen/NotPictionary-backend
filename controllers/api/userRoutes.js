@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { User } = require('../../models');
+const { User,Score } = require('../../models');
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt");
 
@@ -7,20 +7,6 @@ router.get('/', async (req, res) => {
   try {
     const userData = await User.findAll()
     res.status(200).json(userData)
-  } catch (err) {
-    console.log(err)
-    res.status(500).json(err)
-  }
-})
-
-router.get('/:username', async (req, res) => {
-  try {
-    const findUser = await User.findOne({
-      where: {
-        username: req.params.username
-      }
-    })
-    res.status(200).json(findUser)
   } catch (err) {
     console.log(err)
     res.status(500).json(err)
@@ -57,7 +43,7 @@ router.post('/', async (req, res) => {
         expiresIn: "2h"
       }
     );
-    res.json({
+    res.status(200).json({
       token,
       user: newUser
     });
@@ -89,7 +75,7 @@ router.post('/login', async (req, res) => {
           expiresIn: "2h"
         }
       );
-      res.json({
+      res.status(200).json({
         token,
         user: foundUser
       });
@@ -107,10 +93,12 @@ router.get("/verifytoken", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   try {
     const data = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("tokek verify")
+    console.log(date.userId)
     const foundUser = await User.findByPk(data.userId, {
       include: [Score]
     });
-    res.json(foundUser);
+    res.status(200).json(foundUser);
   } catch (err) {
     console.log(err);
     res.status(403).json({ msg: "bad token", err });
@@ -118,15 +106,6 @@ router.get("/verifytoken", async (req, res) => {
 });
 
 
-router.post('/logout', (req, res) => {
-  if (req.session.logged_in) {
-    req.session.destroy(() => {
-      res.render("login");
-    });
-  } else {
-    res.status(404).end();
-  }
-});
 
 
 module.exports = router;
