@@ -27,10 +27,6 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false
     },
-    correctGuesses: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    }
   },
   {
     hooks: {
