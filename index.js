@@ -205,7 +205,7 @@ io.on("connection", (socket) => {
   });
 });
 
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync({ force: false }).then(() => {
   server.listen(PORT, () =>
     console.log(`Server listening on http://localhost:${PORT}/`)
   );
