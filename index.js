@@ -115,6 +115,7 @@ io.on("connection", (socket) => {
     leaveRoom(socket)
 
   });
+<<<<<<< HEAD
   const leaveRoom = (socket) => {
     console.log("leave room")
     for (const key in rooms) {
@@ -126,6 +127,25 @@ io.on("connection", (socket) => {
 
 
   }
+=======
+
+const leaveRoom =(socket) =>{
+  console.log("leave room")
+  
+  for (const key in rooms) {
+    const roomName =rooms[key]
+   if (roomName.users.some(user=>user.socket.id === socket.id)) {
+
+    socket.leave(key);
+    roomName.users = roomName.users.filter((item) => item.socket !== socket);
+  }
+  
+   if(roomName.users.length == 0){
+    roomName.inGame = false
+   }
+  }
+}
+>>>>>>> cbed829b22c7b424b84204f31cefe77f00d4fce8
 
   socket.on("send-message", (data) => {
     console.log(data)
