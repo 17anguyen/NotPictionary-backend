@@ -13,6 +13,7 @@ const cors = require("cors");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const { start } = require("repl");
 
 
 app.use(express.json());
@@ -236,11 +237,18 @@ const leaveRoom =(socket) =>{
       io.in(room).emit('gameover', winner)
     }
   })
+socket.on("countdown", (start,room) =>{
+  io.in(room).emit("setCountdown",start);
+  setTimeout(() => {
+    io.in(room).emit("setCountdown",false);
+}, 15000);
+
+})
 
   socket.on("drawing", (data, room) => {
   
     if (room) {
-      socket.in(room).emit("drawing", data)
+      io.in(room).emit("drawing", data)
     }
   });
 });
