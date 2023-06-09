@@ -143,19 +143,19 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-answers", (data) => {
-  
+
     rooms[data.room].answers.push(data);
     console.log(JSON.stringify(data))
     socket.in(data.room).emit("receive-answer", data);
     if (data.message === rooms[data.room].secretWord) {
       io.in(data.room).emit("round-over", data)
       for (let i = 0; i < rooms[data.room].users.length; i++) {
-        if (rooms[data.room].users[i].username===data.sender){
+        if (rooms[data.room].users[i].username === data.sender) {
           rooms[data.room].users[i].score++
-        }        
+        }
       }
-      
-      
+
+
     }
     console.log("answers=====" + data)
   })
@@ -168,6 +168,7 @@ io.on("connection", (socket) => {
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
       // io.to(room).emit("receive-message", `${username} joined the room!`);
+      io.to(room).emit("user-join", username);
       console.log("=====join-room" + rooms[room].users)
     }
 
@@ -237,13 +238,13 @@ io.on("connection", (socket) => {
       io.in(room).emit('gameover', winner)
     }
   })
-socket.on("countdown", (start,room) =>{
-  io.in(room).emit("setCountdown",start);
-  setTimeout(() => {
-    io.in(room).emit("setCountdown",false);
-}, 15000);
+  socket.on("countdown", (start, room) => {
+    io.in(room).emit("setCountdown", start);
+    setTimeout(() => {
+      io.in(room).emit("setCountdown", false);
+    }, 31000);
 
-})
+  })
 
   socket.on("drawing", (data, room) => {
 
