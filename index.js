@@ -142,12 +142,19 @@ const leaveRoom =(socket) =>{
   });
 
   socket.on("send-answers", (data) => {
-    const room = data.room
+  
     rooms[data.room].answers.push(data);
     console.log(JSON.stringify(data))
     socket.in(data.room).emit("receive-answer", data);
     if (data.message === rooms[data.room].secretWord) {
       io.in(data.room).emit("round-over", data)
+      for (let i = 0; i < rooms[data.room].users.length; i++) {
+        if (rooms[data.room].users[i].username===data.sender){
+          rooms[data.room].users[i].score++
+        }        
+      }
+      
+      
     }
     console.log("answers=====" + data)
   })
