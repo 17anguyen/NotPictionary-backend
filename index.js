@@ -48,8 +48,8 @@ app.use('/:id',
 
 const io = new Server(server, {
   cors: {
-    // origin: "http://localhost:3000",
-    origin: "https://doodledash.netlify.app/",
+     origin: "http://localhost:3000",
+    // origin: "https://doodledash.netlify.app/",
   },
 });
 
@@ -240,7 +240,7 @@ io.on("connection", (socket) => {
     io.in(room).emit("setCountdown", start);
     setTimeout(() => {
       io.in(room).emit("setCountdown", false);
-    }, 31000);
+    }, 40000);
 
   })
 
