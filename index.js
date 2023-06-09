@@ -14,6 +14,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const { start } = require("repl");
+const { Socket } = require("dgram");
 
 
 app.use(express.json());
@@ -130,6 +131,7 @@ const leaveRoom =(socket) =>{
   
    if(roomName.users.length == 0){
     roomName.inGame = false
+    roomName.round = 0
    }
   }
 }
@@ -167,7 +169,7 @@ const leaveRoom =(socket) =>{
 
       console.log("=====join-room" + rooms[room])
       console.log(`user ${socket.id} joined room ${room}`);
-      // io.to(room).emit("receive-message", `${username} joined the room!`);
+     
       console.log("=====join-room" + rooms[room].users)
     }
 
@@ -221,7 +223,10 @@ const leaveRoom =(socket) =>{
   } )
 
   socket.on("gameover", (room) => {
+    console.log("game over out")
     if (rooms[room]) {
+      console.log("game over in")
+      rooms[room].inGame = false
       //checking for user with most points
       let winner = {username:'', score:0}
       let users = rooms[room].users
@@ -234,15 +239,16 @@ const leaveRoom =(socket) =>{
           winner.username = user.username
         }
       }
-      io.in(room).emit('gameover', winner)
+      io.in(room).emit('game-over', winner)
     }
   })
 socket.on("countdown", (start,room) =>{
+  if (rooms[room]) {
   io.in(room).emit("setCountdown",start);
   setTimeout(() => {
     io.in(room).emit("setCountdown",false);
-}, 15000);
-
+}, 22000);
+}
 })
 
   socket.on("drawing", (data, room) => {
