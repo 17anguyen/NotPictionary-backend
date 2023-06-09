@@ -14,6 +14,7 @@ const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const { start } = require("repl");
+const { Socket } = require("dgram");
 
 
 app.use(express.json());
@@ -48,7 +49,7 @@ app.use('/:id',
 const io = new Server(server, {
   cors: {
     // origin: "http://localhost:3000",
-    origin: "https://doodledash.netlify.app/",
+     origin: "https://doodledash.netlify.app/",
   },
 });
 
@@ -147,6 +148,7 @@ io.on("connection", (socket) => {
       }
       if (roomName.users.length == 0) {
         roomName.inGame = false
+        roomName.round = 0
       }
     }
   }
@@ -215,7 +217,10 @@ io.on("connection", (socket) => {
   })
 
   socket.on("gameover", (room) => {
+    console.log("game over out")
     if (rooms[room]) {
+      console.log("game over in")
+      rooms[room].inGame = false
       //checking for user with most points
       let winner = { username: '', score: 0 }
       let users = rooms[room].users
@@ -228,14 +233,14 @@ io.on("connection", (socket) => {
           winner.username = user.username
         }
       }
-      io.in(room).emit('gameover', winner)
+      io.in(room).emit('game-over', winner)
     }
   })
   socket.on("countdown", (start, room) => {
     io.in(room).emit("setCountdown", start);
     setTimeout(() => {
       io.in(room).emit("setCountdown", false);
-    }, 31000);
+    }, 40000);
 
   })
 
