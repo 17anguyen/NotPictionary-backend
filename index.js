@@ -13,6 +13,7 @@ const cors = require("cors");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const { start } = require("repl");
 
 
 app.use(express.json());
@@ -81,28 +82,28 @@ const rooms = {
   room1: {
     name: "room1",
     users: [],
-    round:null,
+    round:0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
   room2: {
     name: "room2",
     users: [],
-    round:null,
+    round:0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
   room3: {
     name: "room3",
     users: [],
-    round:null,
+    round:0,
     messages: [],
     answers: [],
-    secrectWord: null,
+    secretWord: null,
     inGame: false
   },
 };
@@ -136,15 +137,26 @@ const leaveRoom =(socket) =>{
   socket.on("send-message", (data) => {
     console.log(data)
     rooms[data.room].messages.push(data);
-    socket.in(data.room).emit("receive-message", data);
+    io.in(data.room).emit("receive-message", data);
     console.log("messages=====")
 
   });
 
   socket.on("send-answers", (data) => {
+  
     rooms[data.room].answers.push(data);
     console.log(JSON.stringify(data))
     socket.in(data.room).emit("receive-answer", data);
+    if (data.message === rooms[data.room].secretWord) {
+      io.in(data.room).emit("round-over", data)
+      for (let i = 0; i < rooms[data.room].users.length; i++) {
+        if (rooms[data.room].users[i].username===data.sender){
+          rooms[data.room].users[i].score++
+        }        
+      }
+      
+      
+    }
     console.log("answers=====" + data)
   })
   socket.on("join-room", (room, username) => {
@@ -166,13 +178,15 @@ const leaveRoom =(socket) =>{
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       rooms[room].inGame = true
-      rooms[room].round = 1
+      rooms[room].round++
+      rooms[room].secretWord = selectedWord
       console.log("++++++++++" + rooms[room].inGame)
       console.log(selectedWord)
       console.log(rooms[room].users)
       console.log(userSelected)
-      io.in(room).emit("selected-props", { userSelected, selectedWord });
+      io.in(room).emit("selected-props", { userSelected, selectedWord,round:rooms[room].round});
     }
+
 
     // randomly select a prompt, assign to secretWord
     //const randomWord = words[Mathfloor]
@@ -181,26 +195,28 @@ const leaveRoom =(socket) =>{
     // emit to the drawer the secret word
   });
 
-  socket.on("round-over", ({sender, roomId, message}) => {
-    const room = rooms[roomId]
-    if (room) {
+  socket.on("round-over", ({sender, room, message},isCorrect) => {
+    const roomObj = rooms[room]
+    console.log("here for score"+roomObj)
+    if (roomObj) {
       //increment round number
-      room.round++
+      // room.round++
       //select new drawer
-      const userSelected = room.users[Math.floor(Math.random() * room.users.length)].username;
+       const userSelected = roomObj.users[Math.floor(Math.random() * roomObj.users.length)].username;
       //select new word
       const selectedWord = words[Math.floor(Math.random() * words.length)]
       //add score to user who guessed correctly
       // find the user in that array, add 1 to their score
-      for (let i = 0; i < room.users.length; i++) {
-        if (room.users[i].username===sender){
-          room.users[i].score++
+      for (let i = 0; i < roomObj.users.length; i++) {
+      
+        if (roomObj.users[i].username===sender){
+          roomObj.users[i].score++
         }        
       }
       console.log(`Score for ${room.users[i].username}: ${room.users[i].score}`)
       //clear the board
       //emit new board and new drawer with new secret word
-      io.in(roomId).emit("selected-props", { userSelected, selectedWord })
+     io.in(roomObj.name).emit("selected-props", { userSelected, selectedWord, isCorrect})
     }
   } )
 
@@ -221,11 +237,18 @@ const leaveRoom =(socket) =>{
       io.in(room).emit('gameover', winner)
     }
   })
+socket.on("countdown", (start,room) =>{
+  io.in(room).emit("setCountdown",start);
+  setTimeout(() => {
+    io.in(room).emit("setCountdown",false);
+}, 15000);
+
+})
 
   socket.on("drawing", (data, room) => {
   
     if (room) {
-      socket.in(room).emit("drawing", data)
+      io.in(room).emit("drawing", data)
     }
   });
 });
