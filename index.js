@@ -13,8 +13,7 @@ const cors = require("cors");
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const { start } = require("repl");
-const { Socket } = require("dgram");
+
 
 
 app.use(express.json());
@@ -52,6 +51,7 @@ const io = new Server(server, {
      origin: "https://doodledash.netlify.app",
   },
 });
+
 
 
 const words = ["waffle",
@@ -169,7 +169,7 @@ io.on("connection", (socket) => {
           rooms[data.room].users[i].score++
         }
       }
-
+  
 
     }
   })
@@ -178,12 +178,13 @@ io.on("connection", (socket) => {
       socket.join(room);
       socket.roomId = room
       rooms[room].users.push({ socket: socket, username: username, score: 0 });
-      io.to(room).emit("user-join", username);
+      io.in(room).emit("user-join", username);
     }
 
   });
 
   socket.on("start-game", (room) => {
+    
     if (rooms[room]) {
       const userSelected = rooms[room].users[Math.floor(Math.random() * rooms[room].users.length)].username;
       const selectedWord = words[Math.floor(Math.random() * words.length)]
@@ -191,30 +192,9 @@ io.on("connection", (socket) => {
       rooms[room].round++
       rooms[room].secretWord = selectedWord
       io.in(room).emit("selected-props", { userSelected, selectedWord, round: rooms[room].round });
+      
     }
   });
-
-  socket.on("round-over", ({ sender, room, message }, isCorrect) => {
-    const roomObj = rooms[room]
-    if (roomObj) {
-      //increment round number
-      // room.round++
-      //select new drawer
-      const userSelected = roomObj.users[Math.floor(Math.random() * roomObj.users.length)].username;
-      //select new word
-      const selectedWord = words[Math.floor(Math.random() * words.length)]
-      //add score to user who guessed correctly
-      // find the user in that array, add 1 to their score
-      for (let i = 0; i < roomObj.users.length; i++) {
-        if (roomObj.users[i].username === sender) {
-          roomObj.users[i].score++
-        }
-      }
-      //clear the board
-      //emit new board and new drawer with new secret word
-      io.in(roomId).emit("selected-props", { userSelected, selectedWord })
-    }
-  })
 
   socket.on("gameover", (room) => {
     console.log("game over out")
@@ -236,12 +216,9 @@ io.on("connection", (socket) => {
       io.in(room).emit('game-over', winner)
     }
   })
-  socket.on("countdown", (start, room) => {
+  socket.on("start-countdown", (start, room) => {
     io.in(room).emit("setCountdown", start);
-    setTimeout(() => {
-      io.in(room).emit("setCountdown", false);
-    }, 40000);
-
+  
   })
 
   socket.on("drawing", (data, room) => {
