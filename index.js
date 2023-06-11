@@ -82,7 +82,7 @@ const words = ["waffle",
   'mountain',
   'cactus',
   'fan',
-  'camp fire',
+  'campfire',
   'cat',
   'lizard',
   'snake',
@@ -99,7 +99,17 @@ const words = ["waffle",
   'snail',
   'bridge',
   'sunglasses',
-  'coat']
+  'coat',
+  'potato',
+  'tent',
+  'maple leaf',
+  'glasses',
+  'cup',
+  'pencil',
+  'rocks',
+  'rollercoaster',
+  'mickey mouse',
+]
 
 const rooms = {
   room1: {
@@ -229,7 +239,7 @@ io.on("connection", (socket) => {
   });
 });
 
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ force: false}).then(() => {
   server.listen(PORT, () =>
     console.log(`Server listening on http://localhost:${PORT}/`)
   );
